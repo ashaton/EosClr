@@ -4,4 +4,8 @@
 
 #pragma once
 
+#include <Windows.h>
+#include "EDSDK.h"
 
+using namespace System;
+using namespace System::Collections::Generic;

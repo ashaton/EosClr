@@ -15,24 +15,48 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EosClr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lib\EDSDK.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\EDSDKErrors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\EDSDKTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EosException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EosClr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EosException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

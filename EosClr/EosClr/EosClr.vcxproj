@@ -53,10 +53,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies />
+      <AdditionalDependencies>EDSDK.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -76,13 +78,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EosClr.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="EosException.h" />
+    <ClInclude Include="lib\EDSDK.h" />
+    <ClInclude Include="lib\EDSDKErrors.h" />
+    <ClInclude Include="lib\EDSDKTypes.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="EosClr.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CameraManager.cpp" />
+    <ClCompile Include="EosException.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
