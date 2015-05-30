@@ -80,7 +80,8 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraManager.h" />
-    <ClInclude Include="EosException.h" />
+    <ClInclude Include="CameraNotConnectedException.h" />
+    <ClInclude Include="Exceptions\EosException.h" />
     <ClInclude Include="lib\EDSDK.h" />
     <ClInclude Include="lib\EDSDKErrors.h" />
     <ClInclude Include="lib\EDSDKTypes.h" />
@@ -92,7 +93,8 @@
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraManager.cpp" />
-    <ClCompile Include="EosException.cpp" />
+    <ClCompile Include="CameraNotConnectedException.cpp" />
+    <ClCompile Include="Exceptions\EosException.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

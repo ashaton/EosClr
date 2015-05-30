@@ -39,7 +39,10 @@
     <ClInclude Include="Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EosException.h">
+    <ClInclude Include="Exceptions\EosException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraNotConnectedException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,7 +59,10 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EosException.cpp">
+    <ClCompile Include="Exceptions\EosException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraNotConnectedException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

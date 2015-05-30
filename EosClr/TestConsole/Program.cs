@@ -20,7 +20,7 @@ namespace TestConsole
                 PrintCameraList();
                 Console.WriteLine("Initialized, ready to test!");
                 Camera activeCamera = SelectCameraPrompt();
-                PromptForAction();
+                PromptForAction(activeCamera);
                 if(activeCamera != null)
                 {
                     activeCamera.Disconnect();
@@ -65,10 +65,26 @@ namespace TestConsole
             return activeCamera;
         }
 
-        static void PromptForAction()
+        static void PromptForAction(Camera ActiveCamera)
         {
             Console.Write("> ");
-            Console.ReadLine();
+            string command = Console.ReadLine();
+            while(true)
+            {
+                switch(command)
+                {
+                    case "q":
+                        return;
+                    case "lv start":
+                        ActiveCamera.ActivateLiveView();
+                        break;
+                    case "lv stop":
+                        ActiveCamera.DeactivateLiveView();
+                        break;
+                }
+                Console.Write("> ");
+                command = Console.ReadLine();
+            }
         }
     }
 }

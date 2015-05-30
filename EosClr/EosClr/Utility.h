@@ -1,7 +1,7 @@
 
 #pragma once
 #include "Stdafx.h"
-#include "EosException.h"
+#include "Exceptions/EosException.h"
 
 namespace EosClr
 {
