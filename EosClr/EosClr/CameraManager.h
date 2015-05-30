@@ -5,13 +5,11 @@
 
 namespace EosClr
 {
-	public ref class CameraManager : IDisposable
+	public ref class CameraManager abstract sealed
 	{
 	public:
-		CameraManager();
-		~CameraManager();
-		List<Camera^>^ GetCameraList();
-	private:
-		Camera^ CurrentCamera;
+		static void Initialize();
+		static void Close();
+		static List<Camera^>^ GetCameraList();
 	};
 }

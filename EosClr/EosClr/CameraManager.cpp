@@ -6,12 +6,12 @@
 
 namespace EosClr
 {
-	CameraManager::CameraManager()
+	void CameraManager::Initialize()
 	{
 		ErrorCheck(EdsInitializeSDK());
 	}
 
-	CameraManager::~CameraManager()
+	void CameraManager::Close()
 	{
 		ErrorCheck(EdsTerminateSDK());
 	}

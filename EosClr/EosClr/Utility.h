@@ -5,7 +5,7 @@
 
 namespace EosClr
 {
-	void ErrorCheck(EdsError Error)
+	static void ErrorCheck(EdsError Error)
 	{
 		if (Error != EDS_ERR_OK)
 		{
