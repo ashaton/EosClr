@@ -32,4 +32,9 @@ namespace EosClr
 			CurrentCamera = nullptr;
 		}
 	}
+
+	void Camera::ActivateLiveView()
+	{
+
+	}
 }

@@ -19,8 +19,11 @@ namespace EosClr
 
 		void Connect();
 		void Disconnect();
+		void ActivateLiveView();
+
 	internal:
 		Camera(EdsCameraRef CameraHandle);
+	
 	private:
 		EdsCameraRef CameraHandle;
 		static Camera^ CurrentCamera;
