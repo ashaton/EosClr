@@ -4,7 +4,7 @@
 namespace EosClr
 {
 	EosException::EosException(EdsError Error)
-		: Exception()
+		: Exception("ERROR CODE " + Error.ToString("X"))
 	{
 		this->Error = Error;
 	}

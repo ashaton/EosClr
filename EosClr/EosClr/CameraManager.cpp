@@ -6,6 +6,11 @@
 
 namespace EosClr
 {
+	CameraManager::CameraManager()
+	{
+		//LoopTask = Task::Factory->StartNew(gcnew Action(&MessageLoop));
+	}
+
 	void CameraManager::Initialize()
 	{
 		ErrorCheck(EdsInitializeSDK());
@@ -13,6 +18,7 @@ namespace EosClr
 
 	void CameraManager::Close()
 	{
+		//LoopTask->Wait();
 		ErrorCheck(EdsTerminateSDK());
 	}
 
@@ -32,5 +38,28 @@ namespace EosClr
 		}
 
 		return cameraList;
+	}
+
+	void CameraManager::MessageLoop()
+	{
+		CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+		MSG winMessage;
+		BOOL result = GetMessage(&winMessage, NULL, 0, 0);
+		while (true)
+		{
+			if (result == 0)
+			{
+				break;
+			}
+			else if (result == -1)
+			{
+				Console::WriteLine("MESSAGE LOOP ERROR: " + GetLastError().ToString("X"));
+				break;
+			}
+			TranslateMessage(&winMessage);
+			DispatchMessage(&winMessage);
+			result = GetMessage(&winMessage, NULL, 0, 0);
+		}
+		CoUninitialize();
 	}
 }

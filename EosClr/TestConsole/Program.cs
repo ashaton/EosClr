@@ -19,11 +19,19 @@ namespace TestConsole
                 Cameras = CameraManager.GetCameraList();
                 PrintCameraList();
                 Console.WriteLine("Initialized, ready to test!");
-                Camera activeCamera = SelectCameraPrompt();
-                PromptForAction(activeCamera);
-                if(activeCamera != null)
+                while(true)
                 {
-                    activeCamera.Disconnect();
+                    Camera activeCamera = SelectCameraPrompt();
+                    if(activeCamera == null)
+                    {
+                        break;
+                    }
+
+                    PromptForAction(activeCamera);
+                    if (activeCamera != null)
+                    {
+                        activeCamera.Disconnect();
+                    }
                 }
             }
             catch(Exception ex)
@@ -54,6 +62,11 @@ namespace TestConsole
             Console.Write("Select a camera: ");
             string input = Console.ReadLine();
             int index;
+            if(input == "q")
+            {
+                return null;
+            }
+
             while(!Int32.TryParse(input, out index) || index < 0 || index >= Cameras.Count)
             {
                 Console.Write("Invalid choice, try again: ");
@@ -80,6 +93,21 @@ namespace TestConsole
                         break;
                     case "lv stop":
                         ActiveCamera.DeactivateLiveView();
+                        break;
+                    case "zl":
+                        Console.WriteLine(ActiveCamera.ZoomLevel);
+                        break;
+                    case "szl":
+                        ActiveCamera.ZoomLevel = 5;
+                        break;
+                    case "ip":
+                        Console.WriteLine(ActiveCamera.CropPosition);
+                        break;
+                    case "mode":
+                        Console.WriteLine(ActiveCamera.Mode);
+                        break;
+                    case "sm":
+                        ActiveCamera.Mode = 3;
                         break;
                 }
                 Console.Write("> ");

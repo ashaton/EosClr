@@ -11,5 +11,9 @@ namespace EosClr
 		static void Initialize();
 		static void Close();
 		static List<Camera^>^ GetCameraList();
+		static Task^ LoopTask;
+	private:
+		static CameraManager();
+		static void MessageLoop();
 	};
 }
