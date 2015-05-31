@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EosClr", "EosClr\EosClr.vcxproj", "{1DB3CAC6-B983-4FDF-983E-34F34AC341DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUI", "TestUI\TestUI.csproj", "{4CED9CE8-A410-4C9E-88A5-AE2496F65C69}"
 EndProject
 Global
@@ -29,16 +27,6 @@ Global
 		{1DB3CAC6-B983-4FDF-983E-34F34AC341DF}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{1DB3CAC6-B983-4FDF-983E-34F34AC341DF}.Release|Win32.ActiveCfg = Release|Win32
 		{1DB3CAC6-B983-4FDF-983E-34F34AC341DF}.Release|Win32.Build.0 = Release|Win32
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Debug|Win32.ActiveCfg = Debug|x86
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{1C370A5D-0EF0-4E37-9BEC-7EFF97A98726}.Release|Win32.ActiveCfg = Release|Any CPU
 		{4CED9CE8-A410-4C9E-88A5-AE2496F65C69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4CED9CE8-A410-4C9E-88A5-AE2496F65C69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CED9CE8-A410-4C9E-88A5-AE2496F65C69}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

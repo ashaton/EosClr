@@ -7,7 +7,7 @@ namespace EosClr
 	private ref class EdsValueAttribute : Attribute
 	{
 	public:
-		EdsValueAttribute(EdsInt32 Value);
-		initonly EdsInt32 Value;
+		EdsValueAttribute(EdsUInt32 Value);
+		initonly EdsUInt32 Value;
 	};
 }

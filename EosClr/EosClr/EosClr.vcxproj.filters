@@ -51,6 +51,9 @@
     <ClInclude Include="IsoSpeed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IsoManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EdsValueAttribute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IsoManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

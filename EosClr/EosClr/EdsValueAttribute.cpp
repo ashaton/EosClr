@@ -3,7 +3,7 @@
 
 namespace EosClr
 {
-	EdsValueAttribute::EdsValueAttribute(EdsInt32 Value)
+	EdsValueAttribute::EdsValueAttribute(EdsUInt32 Value)
 	{
 		this->Value = Value;
 	}

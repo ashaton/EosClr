@@ -54,6 +54,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(ProjectDir)lib;</AdditionalIncludeDirectories>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -83,6 +84,7 @@
     <ClInclude Include="CameraNotConnectedException.h" />
     <ClInclude Include="EdsValueAttribute.h" />
     <ClInclude Include="Exceptions\EosException.h" />
+    <ClInclude Include="IsoManager.h" />
     <ClInclude Include="IsoSpeed.h" />
     <ClInclude Include="lib\EDSDK.h" />
     <ClInclude Include="lib\EDSDKErrors.h" />
@@ -98,6 +100,7 @@
     <ClCompile Include="CameraNotConnectedException.cpp" />
     <ClCompile Include="EdsValueAttribute.cpp" />
     <ClCompile Include="Exceptions\EosException.cpp" />
+    <ClCompile Include="IsoManager.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

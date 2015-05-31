@@ -30,7 +30,7 @@ namespace EosClr
 
 		ErrorCheck(EdsGetCameraList(&cameraHandleList));
 		ErrorCheck(EdsGetChildCount(cameraHandleList, &cameraCount));
-		for (int i = 0; i < cameraCount; i++)
+		for (int i = 0; i < (int)cameraCount; i++)
 		{
 			EdsCameraRef cameraHandle;
 			ErrorCheck(EdsGetChildAtIndex(cameraHandleList, i, &cameraHandle));

@@ -21,7 +21,7 @@ namespace TestUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Camera ActiveCamera;
+        public Camera ActiveCamera { get; set; }
 
         public MainWindow()
         {
@@ -44,8 +44,14 @@ namespace TestUI
         {
             ActiveCamera = (Camera)CameraSelectBox.SelectedItem;
             ActiveCamera.PropertyChanged += OnCameraPropertyChanged;
+            ActiveCamera.IsoChanged += ActiveCamera_IsoChanged;
             ActiveCamera.Connect();
             IsoBox.ItemsSource = ActiveCamera.SupportedIsoSpeeds;
+        }
+
+        void ActiveCamera_IsoChanged(IsoSpeed Iso)
+        {
+            IsoBox.SelectedItem = Iso;
         }
 
         void OnCameraPropertyChanged(string Message)
@@ -62,6 +68,11 @@ namespace TestUI
         private void StopLiveViewButton_Click(object sender, RoutedEventArgs e)
         {
             ActiveCamera.DeactivateLiveView();
+        }
+
+        private void IsoBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ActiveCamera.Iso = (IsoSpeed)IsoBox.SelectedItem;
         }
     }
 }

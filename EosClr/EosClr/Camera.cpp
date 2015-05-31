@@ -2,28 +2,10 @@
 #include "Camera.h"
 #include "Utility.h"
 #include "CameraNotConnectedException.h"
+#include "IsoManager.h"
 
 namespace EosClr
 {
-	static Camera::Camera()
-	{
-		IsoSpeedLookup = gcnew Dictionary<EdsInt32, IsoSpeed>();
-		System::Type^ isoType = IsoSpeed::typeid;
-		array<String^>^ isoFields = Enum::GetNames(isoType);
-		for each(String^ isoFieldName in isoFields)
-		{
-			FieldInfo^ fieldInfo = isoType->GetField(isoFieldName);
-			array<Object^>^ edsValueAttrs = fieldInfo->GetCustomAttributes(EdsValueAttribute::typeid, false);
-			if (edsValueAttrs->Length != 1)
-			{
-				throw gcnew Exception("ISO Speed " + isoFieldName + " doesn't have an EDS value attribute.");
-			}
-			EdsValueAttribute^ edsValueAttr = (EdsValueAttribute^)edsValueAttrs[0];
-			EdsInt32 value = edsValueAttr->Value;
-			IsoSpeedLookup->Add(value, static_cast<IsoSpeed>(Enum::Parse(isoType, isoFieldName)));
-		}
-	}
-
 	Camera::Camera(EdsCameraRef CameraHandle)
 	{
 		this->CameraHandle = CameraHandle;
@@ -51,6 +33,23 @@ namespace EosClr
 		_Name = NewName;
 	}
 
+	IsoSpeed Camera::Iso::get()
+	{
+		return _Iso;
+	}
+
+	void Camera::Iso::set(IsoSpeed Iso)
+	{
+		if (Iso == _Iso)
+		{
+			return;
+		}
+
+		EdsUInt32 edsIsoValue = IsoManager::GetEdsIsoValue(Iso);
+		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(edsIsoValue), &edsIsoValue));
+		_Iso = Iso;
+	}
+
 	IEnumerable<IsoSpeed>^ Camera::SupportedIsoSpeeds::get()
 	{
 		return _SupportedIsoSpeeds;
@@ -71,12 +70,7 @@ namespace EosClr
 		for (int i = 0; i < isoSpeeds.numElements; i++)
 		{
 			EdsInt32 speedValue = isoSpeeds.propDesc[i];
-			IsoSpeed speed;
-			if (!IsoSpeedLookup->TryGetValue(speedValue, speed))
-			{
-				throw gcnew Exception("Camera supports ISO speed with value " + speedValue.ToString("X")
-					+ " but there is no ISO speed with this value.");
-			}
+			IsoSpeed speed = IsoManager::GetIsoSpeed(speedValue);
 			_SupportedIsoSpeeds->Add(speed);
 		}
 	}
@@ -117,6 +111,10 @@ namespace EosClr
 			throw gcnew CameraNotConnectedException();
 		}
 
+		if (LiveViewImage == NULL || LiveViewStream == NULL)
+		{
+			return;
+		}
 		ErrorCheck(EdsRelease(LiveViewImage));
 		ErrorCheck(EdsRelease(LiveViewStream));
 		LiveViewImage = NULL;
@@ -190,12 +188,41 @@ namespace EosClr
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_AEModeSelect, 0, sizeof(mode), &mode));
 	}
 
-	EdsError Camera::OnPropertyEvent(EdsPropertyEvent inEvent,
-		EdsPropertyID inPropertyID,
-		EdsUInt32 inParam,
-		EdsVoid* inContext)
+	EdsError Camera::OnPropertyEvent(EdsPropertyEvent EventType,
+		EdsPropertyID PropertyID,
+		EdsUInt32 Param,
+		EdsVoid* Context)
 	{
-		PropertyChanged("Event = " + inEvent.ToString("X") + ", Prop = " + inPropertyID.ToString("X") + ", Param = " + inParam.ToString("X"));
+		if (EventType == kEdsPropertyEvent_PropertyChanged)
+		{
+			OnPropertyValueChanged(PropertyID, Param);
+		}
 		return EDS_ERR_OK;
+	}
+
+	void Camera::OnPropertyValueChanged(EdsPropertyID PropertyID, EdsUInt32 Param)
+	{
+		switch (PropertyID)
+		{
+			case kEdsPropID_ISOSpeed:
+			{
+				EdsUInt32 currentIsoValue;
+				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(currentIsoValue), &currentIsoValue));
+				IsoSpeed newSpeed = IsoManager::GetIsoSpeed(currentIsoValue);
+				Iso = newSpeed;
+				IsoChanged(newSpeed);
+				break;
+			}
+			case kEdsPropID_AvailableShots:
+			{
+				EdsUInt32 numShots;
+				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_AvailableShots, 0, sizeof(numShots), &numShots));
+				NumberOfPicturesLeftChanged(numShots);
+				break;
+			}
+			default:
+				PropertyChanged("Prop = " + PropertyID.ToString("X") + ", Param = " + Param.ToString("X"));
+				break;
+		}
 	}
 }
