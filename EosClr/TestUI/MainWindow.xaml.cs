@@ -45,6 +45,7 @@ namespace TestUI
             ActiveCamera = (Camera)CameraSelectBox.SelectedItem;
             ActiveCamera.PropertyChanged += OnCameraPropertyChanged;
             ActiveCamera.Connect();
+            IsoBox.ItemsSource = ActiveCamera.SupportedIsoSpeeds;
         }
 
         void OnCameraPropertyChanged(string Message)

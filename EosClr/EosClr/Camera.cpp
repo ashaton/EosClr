@@ -5,9 +5,29 @@
 
 namespace EosClr
 {
+	static Camera::Camera()
+	{
+		IsoSpeedLookup = gcnew Dictionary<EdsInt32, IsoSpeed>();
+		System::Type^ isoType = IsoSpeed::typeid;
+		array<String^>^ isoFields = Enum::GetNames(isoType);
+		for each(String^ isoFieldName in isoFields)
+		{
+			FieldInfo^ fieldInfo = isoType->GetField(isoFieldName);
+			array<Object^>^ edsValueAttrs = fieldInfo->GetCustomAttributes(EdsValueAttribute::typeid, false);
+			if (edsValueAttrs->Length != 1)
+			{
+				throw gcnew Exception("ISO Speed " + isoFieldName + " doesn't have an EDS value attribute.");
+			}
+			EdsValueAttribute^ edsValueAttr = (EdsValueAttribute^)edsValueAttrs[0];
+			EdsInt32 value = edsValueAttr->Value;
+			IsoSpeedLookup->Add(value, static_cast<IsoSpeed>(Enum::Parse(isoType, isoFieldName)));
+		}
+	}
+
 	Camera::Camera(EdsCameraRef CameraHandle)
 	{
 		this->CameraHandle = CameraHandle;
+		_SupportedIsoSpeeds = gcnew List<IsoSpeed>();
 		EdsDeviceInfo deviceInfo;
 		ErrorCheck(EdsGetDeviceInfo(CameraHandle, &deviceInfo));
 
@@ -15,7 +35,7 @@ namespace EosClr
 		IntPtr delegatePointer = Marshal::GetFunctionPointerForDelegate(Handler);
 		EdsPropertyEventHandler handler = (EdsPropertyEventHandler)delegatePointer.ToPointer();
 		ErrorCheck(EdsSetPropertyEventHandler(CameraHandle, kEdsPropertyEvent_All, handler, NULL));
-		
+
 		Name = Marshal::PtrToStringAnsi((IntPtr)deviceInfo.szDeviceDescription);
 		Port = Marshal::PtrToStringAnsi((IntPtr)deviceInfo.szPortName);
 		Type = static_cast<CameraType>(deviceInfo.deviceSubType);
@@ -31,6 +51,11 @@ namespace EosClr
 		_Name = NewName;
 	}
 
+	IEnumerable<IsoSpeed>^ Camera::SupportedIsoSpeeds::get()
+	{
+		return _SupportedIsoSpeeds;
+	}
+
 	void Camera::Connect()
 	{
 		if (CurrentCamera != nullptr)
@@ -39,6 +64,21 @@ namespace EosClr
 		}
 		ErrorCheck(EdsOpenSession(CameraHandle));
 		CurrentCamera = this;
+
+		_SupportedIsoSpeeds->Clear();
+		EdsPropertyDesc isoSpeeds;
+		ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_ISOSpeed, &isoSpeeds));
+		for (int i = 0; i < isoSpeeds.numElements; i++)
+		{
+			EdsInt32 speedValue = isoSpeeds.propDesc[i];
+			IsoSpeed speed;
+			if (!IsoSpeedLookup->TryGetValue(speedValue, speed))
+			{
+				throw gcnew Exception("Camera supports ISO speed with value " + speedValue.ToString("X")
+					+ " but there is no ISO speed with this value.");
+			}
+			_SupportedIsoSpeeds->Add(speed);
+		}
 	}
 
 	void Camera::Disconnect()
@@ -153,13 +193,9 @@ namespace EosClr
 	EdsError Camera::OnPropertyEvent(EdsPropertyEvent inEvent,
 		EdsPropertyID inPropertyID,
 		EdsUInt32 inParam,
-		IntPtr inContext)
+		EdsVoid* inContext)
 	{
 		PropertyChanged("Event = " + inEvent.ToString("X") + ", Prop = " + inPropertyID.ToString("X") + ", Param = " + inParam.ToString("X"));
-		/*Console::WriteLine("PROP EVENT HAPPENED");
-		Console::WriteLine("EVENT = " + inEvent.ToString("X"));
-		Console::WriteLine("PROP = " + inPropertyID.ToString("X"));
-		Console::WriteLine("PARAM = " + inParam.ToString("X"));*/
 		return EDS_ERR_OK;
 	}
 }

@@ -81,7 +81,9 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="CameraNotConnectedException.h" />
+    <ClInclude Include="EdsValueAttribute.h" />
     <ClInclude Include="Exceptions\EosException.h" />
+    <ClInclude Include="IsoSpeed.h" />
     <ClInclude Include="lib\EDSDK.h" />
     <ClInclude Include="lib\EDSDKErrors.h" />
     <ClInclude Include="lib\EDSDKTypes.h" />
@@ -94,6 +96,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="CameraNotConnectedException.cpp" />
+    <ClCompile Include="EdsValueAttribute.cpp" />
     <ClCompile Include="Exceptions\EosException.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "IsoSpeed.h"
+
 namespace EosClr
 {
 	public enum class CameraType
@@ -36,6 +38,10 @@ namespace EosClr
 			int get();
 			void set(int);
 		}
+		property IEnumerable<IsoSpeed>^ SupportedIsoSpeeds
+		{
+			IEnumerable<IsoSpeed>^ get();
+		}
 
 		event Action<String^>^ PropertyChanged;
 
@@ -52,15 +58,19 @@ namespace EosClr
 		EdsCameraRef CameraHandle;
 		EdsStreamRef LiveViewStream;
 		EdsEvfImageRef LiveViewImage;
+		List<IsoSpeed>^ _SupportedIsoSpeeds;
+
 		static Camera^ CurrentCamera;
+		static Dictionary<EdsInt32, IsoSpeed>^ IsoSpeedLookup;
+		static Camera();
 		
-		delegate EdsError PropertyEventHandlerDelegate(EdsPropertyEvent, EdsPropertyID, EdsUInt32, IntPtr);
+		delegate EdsError PropertyEventHandlerDelegate(EdsPropertyEvent, EdsPropertyID, EdsUInt32, EdsVoid*);
 		PropertyEventHandlerDelegate^ Handler;
 
 		EdsError OnPropertyEvent(EdsPropertyEvent inEvent,
 			EdsPropertyID inPropertyID,
 			EdsUInt32 inParam,
-			IntPtr inContext);
+			EdsVoid* inContext);
 	};
 
 }
