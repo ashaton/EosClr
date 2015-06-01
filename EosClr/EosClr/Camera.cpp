@@ -61,7 +61,6 @@ namespace EosClr
 		{
 			throw gcnew CameraNotConnectedException();
 		}
-
 		return _Iso;
 	}
 
@@ -82,6 +81,26 @@ namespace EosClr
 		EdsUInt32 edsIsoValue = IsoManager::GetEdsIsoValue(Iso);
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(edsIsoValue), &edsIsoValue));
 		_Iso = Iso;
+		IsoChanged(Iso);
+	}
+
+	int Camera::PicturesRemaining::get()
+	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+		return _PicturesRemaining;
+	}
+
+	void Camera::PicturesRemaining::set(int PicturesRemaining)
+	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+		_PicturesRemaining = PicturesRemaining;
+		PicturesRemainingChanged(PicturesRemaining);
 	}
 
 	IEnumerable<IsoSpeed>^ Camera::SupportedIsoSpeeds::get()
@@ -90,7 +109,6 @@ namespace EosClr
 		{
 			throw gcnew CameraNotConnectedException();
 		}
-
 		return _SupportedIsoSpeeds;
 	}
 
@@ -253,16 +271,14 @@ namespace EosClr
 			{
 				EdsUInt32 currentIsoValue;
 				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(currentIsoValue), &currentIsoValue));
-				IsoSpeed newSpeed = IsoManager::GetIsoSpeed(currentIsoValue);
-				Iso = newSpeed;
-				IsoChanged(newSpeed);
+				Iso = IsoManager::GetIsoSpeed(currentIsoValue);
 				break;
 			}
 			case kEdsPropID_AvailableShots: // How many pictures can fit in the available disk space
 			{
 				EdsUInt32 numShots;
 				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_AvailableShots, 0, sizeof(numShots), &numShots));
-				NumberOfPicturesLeftChanged(numShots);
+				PicturesRemaining = numShots;
 				break;
 			}
 			default: // Anything that we haven't handled yet gets printed to the debug event

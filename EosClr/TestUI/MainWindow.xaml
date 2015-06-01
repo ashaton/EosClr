@@ -23,5 +23,6 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
+        <Label x:Name="PicturesLeftLabel" Content="Pictures Left:" HorizontalAlignment="Left" Margin="270,10,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

@@ -45,8 +45,14 @@ namespace TestUI
             ActiveCamera = (Camera)CameraSelectBox.SelectedItem;
             ActiveCamera.PropertyChanged += OnCameraPropertyChanged;
             ActiveCamera.IsoChanged += ActiveCamera_IsoChanged;
+            ActiveCamera.PicturesRemainingChanged += ActiveCamera_PicturesRemainingChanged;
             ActiveCamera.Connect();
             IsoBox.ItemsSource = ActiveCamera.SupportedIsoSpeeds;
+        }
+
+        void ActiveCamera_PicturesRemainingChanged(int PicturesRemaining)
+        {
+            PicturesLeftLabel.Content = "Pictures Left: [" + PicturesRemaining + "]";
         }
 
         void ActiveCamera_IsoChanged(IsoSpeed Iso)

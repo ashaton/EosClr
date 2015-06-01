@@ -100,6 +100,17 @@ namespace EosClr
 		}
 
 		/// <summary>
+		/// The estimated number of pictures that can fit on the
+		/// host's available disk space
+		/// </summary>
+		property int PicturesRemaining
+		{
+			int get();
+		private:
+			void set(int);
+		}
+
+		/// <summary>
 		/// The ISO settings that this camera supports
 		/// </summary>
 		property IEnumerable<IsoSpeed>^ SupportedIsoSpeeds
@@ -119,7 +130,7 @@ namespace EosClr
 		/// The estimate is based on the average picture size using the current settings,
 		/// and the amount of hard drive space left on the host computer.
 		/// </summary>
-		event Action<int>^ NumberOfPicturesLeftChanged;
+		event Action<int>^ PicturesRemainingChanged;
 
 		/// <summary>
 		/// Debug event for notifications that haven't been implemented yet.
@@ -179,6 +190,11 @@ namespace EosClr
 		/// The underlying field for the Iso property
 		/// </summary>
 		IsoSpeed _Iso;
+
+		/// <summary>
+		/// The underlying field for the PicturesRemaining property
+		/// </summary>
+		int _PicturesRemaining;
 
 		/// <summary>
 		/// The underlying field for the SupportedIsoSpeeds property
