@@ -10,17 +10,19 @@ namespace EosClr
 	{
 		this->CameraHandle = CameraHandle;
 		_SupportedIsoSpeeds = gcnew List<IsoSpeed>();
+		
+		// Initialize the camera and its details
 		EdsDeviceInfo deviceInfo;
 		ErrorCheck(EdsGetDeviceInfo(CameraHandle, &deviceInfo));
-
-		Handler = gcnew PropertyEventHandlerDelegate(this, &Camera::OnPropertyEvent);
-		IntPtr delegatePointer = Marshal::GetFunctionPointerForDelegate(Handler);
-		EdsPropertyEventHandler handler = (EdsPropertyEventHandler)delegatePointer.ToPointer();
-		ErrorCheck(EdsSetPropertyEventHandler(CameraHandle, kEdsPropertyEvent_All, handler, NULL));
-
 		Name = Marshal::PtrToStringAnsi((IntPtr)deviceInfo.szDeviceDescription);
 		Port = Marshal::PtrToStringAnsi((IntPtr)deviceInfo.szPortName);
-		Type = static_cast<CameraType>(deviceInfo.deviceSubType);
+		Protocol = static_cast<ConnectionProtocol>(deviceInfo.deviceSubType);
+
+		// Subscribe to the property change event
+		Handler = gcnew PropertyEventHandlerDelegate(this, &Camera::OnPropertyEvent);
+		IntPtr delegatePointer = Marshal::GetFunctionPointerForDelegate(Handler);
+		EdsPropertyEventHandler handler = static_cast<EdsPropertyEventHandler>(delegatePointer.ToPointer());
+		ErrorCheck(EdsSetPropertyEventHandler(CameraHandle, kEdsPropertyEvent_All, handler, NULL));
 	}
 
 	String^ Camera::Name::get()
@@ -28,23 +30,55 @@ namespace EosClr
 		return _Name;
 	}
 
-	void Camera::Name::set(String^ NewName)
+	void Camera::Name::set(String^ Name)
 	{
-		_Name = NewName;
+		_Name = Name;
+	}
+
+	String^ Camera::Port::get()
+	{
+		return _Port;
+	}
+
+	void Camera::Port::set(String^ Port)
+	{
+		_Port = Port;
+	}
+
+	ConnectionProtocol Camera::Protocol::get()
+	{
+		return _Protocol;
+	}
+
+	void Camera::Protocol::set(ConnectionProtocol Protocol)
+	{
+		_Protocol = Protocol;
 	}
 
 	IsoSpeed Camera::Iso::get()
 	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+
 		return _Iso;
 	}
 
 	void Camera::Iso::set(IsoSpeed Iso)
 	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+
+		// If the user sets it to the value that's already assigned, just ignore it.
 		if (Iso == _Iso)
 		{
 			return;
 		}
 
+		// Otherwise, send it down to the camera.
 		EdsUInt32 edsIsoValue = IsoManager::GetEdsIsoValue(Iso);
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(edsIsoValue), &edsIsoValue));
 		_Iso = Iso;
@@ -52,6 +86,11 @@ namespace EosClr
 
 	IEnumerable<IsoSpeed>^ Camera::SupportedIsoSpeeds::get()
 	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+
 		return _SupportedIsoSpeeds;
 	}
 
@@ -61,17 +100,20 @@ namespace EosClr
 		{
 			CurrentCamera->Disconnect();
 		}
-		ErrorCheck(EdsOpenSession(CameraHandle));
 		CurrentCamera = this;
+		ErrorCheck(EdsOpenSession(CameraHandle));
 
-		_SupportedIsoSpeeds->Clear();
-		EdsPropertyDesc isoSpeeds;
-		ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_ISOSpeed, &isoSpeeds));
-		for (int i = 0; i < isoSpeeds.numElements; i++)
+		// Get the ISO settings this camera supports upon first connect
+		if (_SupportedIsoSpeeds->Count == 0)
 		{
-			EdsInt32 speedValue = isoSpeeds.propDesc[i];
-			IsoSpeed speed = IsoManager::GetIsoSpeed(speedValue);
-			_SupportedIsoSpeeds->Add(speed);
+			EdsPropertyDesc isoSpeeds;
+			ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_ISOSpeed, &isoSpeeds));
+			for (int i = 0; i < isoSpeeds.numElements; i++)
+			{
+				EdsInt32 speedValue = isoSpeeds.propDesc[i];
+				IsoSpeed speed = IsoManager::GetIsoSpeed(speedValue);
+				_SupportedIsoSpeeds->Add(speed);
+			}
 		}
 	}
 
@@ -90,6 +132,8 @@ namespace EosClr
 		{
 			throw gcnew CameraNotConnectedException();
 		}
+
+		// This is pretty much taken straight from the reference docs.
 		EdsUInt32 propValue;
 		ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
 		propValue |= kEdsEvfOutputDevice_PC;
@@ -111,6 +155,7 @@ namespace EosClr
 			throw gcnew CameraNotConnectedException();
 		}
 
+		// This is also taken straight from the reference docs.
 		if (LiveViewImage == NULL || LiveViewStream == NULL)
 		{
 			return;
@@ -204,7 +249,7 @@ namespace EosClr
 	{
 		switch (PropertyID)
 		{
-			case kEdsPropID_ISOSpeed:
+			case kEdsPropID_ISOSpeed: // ISO Speed
 			{
 				EdsUInt32 currentIsoValue;
 				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(currentIsoValue), &currentIsoValue));
@@ -213,14 +258,14 @@ namespace EosClr
 				IsoChanged(newSpeed);
 				break;
 			}
-			case kEdsPropID_AvailableShots:
+			case kEdsPropID_AvailableShots: // How many pictures can fit in the available disk space
 			{
 				EdsUInt32 numShots;
 				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_AvailableShots, 0, sizeof(numShots), &numShots));
 				NumberOfPicturesLeftChanged(numShots);
 				break;
 			}
-			default:
+			default: // Anything that we haven't handled yet gets printed to the debug event
 				PropertyChanged("Prop = " + PropertyID.ToString("X") + ", Param = " + Param.ToString("X"));
 				break;
 		}

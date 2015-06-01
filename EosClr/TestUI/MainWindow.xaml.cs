@@ -27,7 +27,7 @@ namespace TestUI
         {
             InitializeComponent();
             CameraManager.Initialize();
-            List<Camera> cameras = CameraManager.GetCameraList();
+            IEnumerable<Camera> cameras = CameraManager.GetCameraList();
             CameraSelectBox.ItemsSource = cameras;
         }
 
