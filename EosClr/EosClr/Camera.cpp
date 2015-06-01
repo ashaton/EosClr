@@ -3,6 +3,7 @@
 #include "Utility.h"
 #include "CameraNotConnectedException.h"
 #include "IsoManager.h"
+#include "ExposureTimeManager.h"
 
 namespace EosClr
 {
@@ -10,6 +11,7 @@ namespace EosClr
 	{
 		this->CameraHandle = CameraHandle;
 		_SupportedIsoSpeeds = gcnew List<IsoSpeed>();
+		_SupportedExposureTimes = gcnew List<ExposureTime>();
 		
 		// Initialize the camera and its details
 		EdsDeviceInfo deviceInfo;
@@ -76,8 +78,12 @@ namespace EosClr
 		{
 			return;
 		}
+		if (!_SupportedIsoSpeeds->Contains(Iso))
+		{
+			throw gcnew Exception("This camera doesn't support ISO " + Iso.ToString());
+		}
 
-		// Otherwise, send it down to the camera.
+		// Send it down to the camera.
 		EdsUInt32 edsIsoValue = IsoManager::GetEdsIsoValue(Iso);
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(edsIsoValue), &edsIsoValue));
 		_Iso = Iso;
@@ -103,6 +109,39 @@ namespace EosClr
 		PicturesRemainingChanged(PicturesRemaining);
 	}
 
+	ExposureTime Camera::Exposure::get()
+	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+		return _Exposure;
+	}
+
+	void Camera::Exposure::set(ExposureTime Exposure)
+	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+
+		// If the user sets it to the value that's already assigned, just ignore it.
+		if (Exposure == _Exposure)
+		{
+			return;
+		}
+		if (!_SupportedExposureTimes->Contains(Exposure))
+		{
+			throw gcnew Exception("This camera doesn't support exposure " + Exposure.ToString());
+		}
+
+		// Send it down to the camera.
+		EdsUInt32 edsExposureValue = ExposureTimeManager::GetEdsExposureValue(Exposure);
+		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Tv, 0, sizeof(edsExposureValue), &edsExposureValue));
+		_Exposure = Exposure;
+		ExposureTimeChanged(Exposure);
+	}
+
 	IEnumerable<IsoSpeed>^ Camera::SupportedIsoSpeeds::get()
 	{
 		if (CurrentCamera != this)
@@ -110,6 +149,15 @@ namespace EosClr
 			throw gcnew CameraNotConnectedException();
 		}
 		return _SupportedIsoSpeeds;
+	}
+
+	IEnumerable<ExposureTime>^ Camera::SupportedExposureTimes::get()
+	{
+		if (CurrentCamera != this)
+		{
+			throw gcnew CameraNotConnectedException();
+		}
+		return _SupportedExposureTimes;
 	}
 
 	void Camera::Connect()
@@ -131,6 +179,19 @@ namespace EosClr
 				EdsInt32 speedValue = isoSpeeds.propDesc[i];
 				IsoSpeed speed = IsoManager::GetIsoSpeed(speedValue);
 				_SupportedIsoSpeeds->Add(speed);
+			}
+		}
+
+		// Get the exposure times this camera supports upon first connect
+		if (_SupportedExposureTimes->Count == 0)
+		{
+			EdsPropertyDesc exposureTimes;
+			ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_Tv, &exposureTimes));
+			for (int i = 0; i < exposureTimes.numElements; i++)
+			{
+				EdsInt32 exposureValue = exposureTimes.propDesc[i];
+				ExposureTime exposure = ExposureTimeManager::GetExposureTime(exposureValue);
+				_SupportedExposureTimes->Add(exposure);
 			}
 		}
 	}
@@ -271,14 +332,24 @@ namespace EosClr
 			{
 				EdsUInt32 currentIsoValue;
 				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_ISOSpeed, 0, sizeof(currentIsoValue), &currentIsoValue));
-				Iso = IsoManager::GetIsoSpeed(currentIsoValue);
+				_Iso = IsoManager::GetIsoSpeed(currentIsoValue);
+				IsoChanged(_Iso);
 				break;
 			}
 			case kEdsPropID_AvailableShots: // How many pictures can fit in the available disk space
 			{
 				EdsUInt32 numShots;
 				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_AvailableShots, 0, sizeof(numShots), &numShots));
-				PicturesRemaining = numShots;
+				_PicturesRemaining = numShots;
+				PicturesRemainingChanged(_PicturesRemaining);
+				break;
+			}
+			case kEdsPropID_Tv: // Exposure time
+			{
+				EdsUInt32 exposure;
+				ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_Tv, 0, sizeof(exposure), &exposure));
+				_Exposure = ExposureTimeManager::GetExposureTime(exposure);
+				ExposureTimeChanged(_Exposure);
 				break;
 			}
 			default: // Anything that we haven't handled yet gets printed to the debug event

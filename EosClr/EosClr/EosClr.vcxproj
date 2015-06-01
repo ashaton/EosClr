@@ -84,6 +84,8 @@
     <ClInclude Include="CameraNotConnectedException.h" />
     <ClInclude Include="EdsValueAttribute.h" />
     <ClInclude Include="Exceptions\EosException.h" />
+    <ClInclude Include="ExposureTime.h" />
+    <ClInclude Include="ExposureTimeManager.h" />
     <ClInclude Include="IsoManager.h" />
     <ClInclude Include="IsoSpeed.h" />
     <ClInclude Include="lib\EDSDK.h" />
@@ -100,6 +102,7 @@
     <ClCompile Include="CameraNotConnectedException.cpp" />
     <ClCompile Include="EdsValueAttribute.cpp" />
     <ClCompile Include="Exceptions\EosException.cpp" />
+    <ClCompile Include="ExposureTimeManager.cpp" />
     <ClCompile Include="IsoManager.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

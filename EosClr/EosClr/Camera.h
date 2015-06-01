@@ -2,6 +2,7 @@
 #pragma once
 
 #include "IsoSpeed.h"
+#include "ExposureTime.h"
 
 namespace EosClr
 {
@@ -111,11 +112,28 @@ namespace EosClr
 		}
 
 		/// <summary>
+		/// The current exposure time (shutter speed)
+		/// </summary>
+		property ExposureTime Exposure
+		{
+			ExposureTime get();
+			void set(ExposureTime);
+		}
+
+		/// <summary>
 		/// The ISO settings that this camera supports
 		/// </summary>
 		property IEnumerable<IsoSpeed>^ SupportedIsoSpeeds
 		{
 			IEnumerable<IsoSpeed>^ get();
+		}
+
+		/// <summary>
+		/// The exposure times that this camera supports
+		/// </summary>
+		property IEnumerable<ExposureTime>^ SupportedExposureTimes
+		{
+			IEnumerable<ExposureTime>^ get();
 		}
 #pragma endregion
 
@@ -131,6 +149,11 @@ namespace EosClr
 		/// and the amount of hard drive space left on the host computer.
 		/// </summary>
 		event Action<int>^ PicturesRemainingChanged;
+
+		/// <summary>
+		/// This is called when the camera's exposure time (shutter speed) changed.
+		/// </summary>
+		event Action<ExposureTime>^ ExposureTimeChanged;
 
 		/// <summary>
 		/// Debug event for notifications that haven't been implemented yet.
@@ -192,6 +215,11 @@ namespace EosClr
 		IsoSpeed _Iso;
 
 		/// <summary>
+		/// The underlying field for the Exposure property
+		/// </summary>
+		ExposureTime _Exposure;
+
+		/// <summary>
 		/// The underlying field for the PicturesRemaining property
 		/// </summary>
 		int _PicturesRemaining;
@@ -200,6 +228,11 @@ namespace EosClr
 		/// The underlying field for the SupportedIsoSpeeds property
 		/// </summary>
 		List<IsoSpeed>^ _SupportedIsoSpeeds;
+
+		/// <summary>
+		/// The underlying field for the SupportedExposureTimes property
+		/// </summary>
+		List<ExposureTime>^ _SupportedExposureTimes;
 
 		/// <summary>
 		/// The EDSDK object for the camera

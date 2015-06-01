@@ -1,18 +1,8 @@
 ﻿using EosClr;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace TestUI
 {
@@ -45,9 +35,16 @@ namespace TestUI
             ActiveCamera = (Camera)CameraSelectBox.SelectedItem;
             ActiveCamera.PropertyChanged += OnCameraPropertyChanged;
             ActiveCamera.IsoChanged += ActiveCamera_IsoChanged;
+            ActiveCamera.ExposureTimeChanged += ActiveCamera_ExposureTimeChanged;
             ActiveCamera.PicturesRemainingChanged += ActiveCamera_PicturesRemainingChanged;
             ActiveCamera.Connect();
             IsoBox.ItemsSource = ActiveCamera.SupportedIsoSpeeds;
+            ExposureBox.ItemsSource = ActiveCamera.SupportedExposureTimes;
+        }
+
+        void ActiveCamera_ExposureTimeChanged(ExposureTime Exposure)
+        {
+            ExposureBox.SelectedItem = Exposure;
         }
 
         void ActiveCamera_PicturesRemainingChanged(int PicturesRemaining)
@@ -79,6 +76,23 @@ namespace TestUI
         private void IsoBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ActiveCamera.Iso = (IsoSpeed)IsoBox.SelectedItem;
+        }
+
+        private void ExposureBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(e.RemovedItems.Count > 0)
+            {
+                ExposureTime oldSetting = (ExposureTime)e.RemovedItems[0];
+                try
+                {
+                    ActiveCamera.Exposure = (ExposureTime)ExposureBox.SelectedItem;
+                }
+                catch (EosException)
+                {
+                    MessageBox.Show("That setting is invalid.", "Invalid setting", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    ExposureBox.SelectedItem = oldSetting;
+                }
+            }
         }
     }
 }
