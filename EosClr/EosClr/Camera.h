@@ -156,6 +156,18 @@ namespace EosClr
 		event Action<ExposureTime>^ ExposureTimeChanged;
 
 		/// <summary>
+		/// This is called when the list of ISO speeds the camera currently supports
+		/// has changed.
+		/// </summary>
+		event Action<IEnumerable<IsoSpeed>^>^ SupportedIsoSpeedsChanged;
+
+		/// <summary>
+		/// This is called when the list of exposure times the camera currently supports
+		/// has changed.
+		/// </summary>
+		event Action<IEnumerable<ExposureTime>^>^ SupportedExposureTimesChanged;
+
+		/// <summary>
 		/// Debug event for notifications that haven't been implemented yet.
 		/// </summary>
 		event Action<String^>^ PropertyChanged;
@@ -255,6 +267,17 @@ namespace EosClr
 		static Camera^ CurrentCamera;
 
 		/// <summary>
+		/// Refreshes the list of ISO speeds that the camera currently supports.
+		/// </summary>
+		void RefreshSupportedIsoSpeeds();
+
+		/// <summary>
+		/// Refreshes the list of exposure times that the camera currently supports.
+		/// This changes based on certain settings like the mode and LiveView's status.
+		/// </summary>
+		void RefreshSupportedExposureTimes();
+
+		/// <summary>
 		/// A managed version of the EdsPropertyEventHandler function signature.
 		/// </summary>
 		/// <param name="EventType">The type of event (this will either be 
@@ -303,6 +326,15 @@ namespace EosClr
 		/// this is kind of a nebulous thing that depends on the parameter. I'm not really
 		/// sure what it does yet.</param>
 		void OnPropertyValueChanged(EdsPropertyID PropertyID, EdsUInt32 Param);
+
+		/// <summary>
+		/// This handles the logic when a particular property's list of valid options has changed.
+		/// </summary>
+		/// <param name="PropertyID">The ID of the property options that changed</param>
+		/// <param name="Param">Some useful detail about the property being updated,
+		/// this is kind of a nebulous thing that depends on the property. I'm not really
+		/// sure what it does yet.</param>
+		void OnPropertyOptionsChanged(EdsPropertyID PropertyID, EdsUInt32 Param);
 	};
 
 }

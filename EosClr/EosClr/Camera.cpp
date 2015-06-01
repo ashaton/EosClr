@@ -169,31 +169,8 @@ namespace EosClr
 		CurrentCamera = this;
 		ErrorCheck(EdsOpenSession(CameraHandle));
 
-		// Get the ISO settings this camera supports upon first connect
-		if (_SupportedIsoSpeeds->Count == 0)
-		{
-			EdsPropertyDesc isoSpeeds;
-			ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_ISOSpeed, &isoSpeeds));
-			for (int i = 0; i < isoSpeeds.numElements; i++)
-			{
-				EdsInt32 speedValue = isoSpeeds.propDesc[i];
-				IsoSpeed speed = IsoManager::GetIsoSpeed(speedValue);
-				_SupportedIsoSpeeds->Add(speed);
-			}
-		}
-
-		// Get the exposure times this camera supports upon first connect
-		if (_SupportedExposureTimes->Count == 0)
-		{
-			EdsPropertyDesc exposureTimes;
-			ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_Tv, &exposureTimes));
-			for (int i = 0; i < exposureTimes.numElements; i++)
-			{
-				EdsInt32 exposureValue = exposureTimes.propDesc[i];
-				ExposureTime exposure = ExposureTimeManager::GetExposureTime(exposureValue);
-				_SupportedExposureTimes->Add(exposure);
-			}
-		}
+		RefreshSupportedIsoSpeeds();
+		RefreshSupportedExposureTimes();
 	}
 
 	void Camera::Disconnect()
@@ -312,6 +289,32 @@ namespace EosClr
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_AEModeSelect, 0, sizeof(mode), &mode));
 	}
 
+	void Camera::RefreshSupportedIsoSpeeds()
+	{
+		_SupportedIsoSpeeds->Clear();
+		EdsPropertyDesc isoSpeeds;
+		ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_ISOSpeed, &isoSpeeds));
+		for (int i = 0; i < isoSpeeds.numElements; i++)
+		{
+			EdsInt32 speedValue = isoSpeeds.propDesc[i];
+			IsoSpeed speed = IsoManager::GetIsoSpeed(speedValue);
+			_SupportedIsoSpeeds->Add(speed);
+		}
+	}
+
+	void Camera::RefreshSupportedExposureTimes()
+	{
+		_SupportedExposureTimes->Clear();
+		EdsPropertyDesc exposureTimes;
+		ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_Tv, &exposureTimes));
+		for (int i = 0; i < exposureTimes.numElements; i++)
+		{
+			EdsInt32 exposureValue = exposureTimes.propDesc[i];
+			ExposureTime exposure = ExposureTimeManager::GetExposureTime(exposureValue);
+			_SupportedExposureTimes->Add(exposure);
+		}
+	}
+
 	EdsError Camera::OnPropertyEvent(EdsPropertyEvent EventType,
 		EdsPropertyID PropertyID,
 		EdsUInt32 Param,
@@ -320,6 +323,10 @@ namespace EosClr
 		if (EventType == kEdsPropertyEvent_PropertyChanged)
 		{
 			OnPropertyValueChanged(PropertyID, Param);
+		}
+		else
+		{
+			OnPropertyOptionsChanged(PropertyID, Param);
 		}
 		return EDS_ERR_OK;
 	}
@@ -353,8 +360,30 @@ namespace EosClr
 				break;
 			}
 			default: // Anything that we haven't handled yet gets printed to the debug event
-				PropertyChanged("Prop = " + PropertyID.ToString("X") + ", Param = " + Param.ToString("X"));
+				PropertyChanged("PropertyValueChanged, Prop = " + PropertyID.ToString("X") + ", Param = " + Param.ToString("X"));
 				break;
+		}
+	}
+
+	void Camera::OnPropertyOptionsChanged(EdsPropertyID PropertyID, EdsUInt32 Param)
+	{
+		switch (PropertyID)
+		{
+		case kEdsPropID_ISOSpeed: // ISO Speed
+		{
+			RefreshSupportedIsoSpeeds();
+			SupportedIsoSpeedsChanged(_SupportedIsoSpeeds);
+			break;
+		}
+		case kEdsPropID_Tv: // Exposure time
+		{
+			RefreshSupportedExposureTimes();
+			SupportedExposureTimesChanged(_SupportedExposureTimes);
+			break;
+		}
+		default: // Anything that we haven't handled yet gets printed to the debug event
+			PropertyChanged("PropertyOptionsChanged, Prop = " + PropertyID.ToString("X") + ", Param = " + Param.ToString("X"));
+			break;
 		}
 	}
 }

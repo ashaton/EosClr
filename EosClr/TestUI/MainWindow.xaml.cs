@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace TestUI
 {
@@ -37,9 +38,22 @@ namespace TestUI
             ActiveCamera.IsoChanged += ActiveCamera_IsoChanged;
             ActiveCamera.ExposureTimeChanged += ActiveCamera_ExposureTimeChanged;
             ActiveCamera.PicturesRemainingChanged += ActiveCamera_PicturesRemainingChanged;
+            ActiveCamera.SupportedIsoSpeedsChanged += ActiveCamera_SupportedIsoSpeedsChanged;
+            ActiveCamera.SupportedExposureTimesChanged += ActiveCamera_SupportedExposureTimesChanged;
+
             ActiveCamera.Connect();
-            IsoBox.ItemsSource = ActiveCamera.SupportedIsoSpeeds;
-            ExposureBox.ItemsSource = ActiveCamera.SupportedExposureTimes;
+        }
+
+        void ActiveCamera_SupportedExposureTimesChanged(IEnumerable<ExposureTime> SupportedExposureTimes)
+        {
+            ExposureBox.ItemsSource = SupportedExposureTimes;
+            ExposureBox.Items.Refresh();
+        }
+
+        void ActiveCamera_SupportedIsoSpeedsChanged(IEnumerable<IsoSpeed> SupportedIsoSpeeds)
+        {
+            IsoBox.ItemsSource = SupportedIsoSpeeds;
+            IsoBox.Items.Refresh();
         }
 
         void ActiveCamera_ExposureTimeChanged(ExposureTime Exposure)
