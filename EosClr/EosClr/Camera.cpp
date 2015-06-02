@@ -195,7 +195,7 @@ namespace EosClr
 		// This is pretty much taken straight from the reference docs.
 		EdsUInt32 propValue;
 		ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
-		propValue = kEdsEvfOutputDevice_PC;
+		propValue |= kEdsEvfOutputDevice_PC;
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
 		
 		pin_ptr<EdsStreamRef> pinnedLiveViewStream = &LiveViewStream;
@@ -243,7 +243,7 @@ namespace EosClr
 
 		EdsUInt32 propValue;
 		ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
-		propValue = kEdsEvfOutputDevice_TFT;
+		propValue &= ~kEdsEvfOutputDevice_PC;
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
 	}
 
