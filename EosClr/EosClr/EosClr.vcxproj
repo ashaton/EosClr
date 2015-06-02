@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>EDSDK.lib;user32.lib;Ole32.lib</AdditionalDependencies>
+      <AdditionalDependencies>EDSDK.lib;user32.lib;Ole32.lib;turbojpeg.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)lib;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -91,6 +91,7 @@
     <ClInclude Include="lib\EDSDK.h" />
     <ClInclude Include="lib\EDSDKErrors.h" />
     <ClInclude Include="lib\EDSDKTypes.h" />
+    <ClInclude Include="lib\turbojpeg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Utility.h" />
@@ -117,6 +118,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\turbojpeg.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

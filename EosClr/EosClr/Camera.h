@@ -4,6 +4,12 @@
 #include "IsoSpeed.h"
 #include "ExposureTime.h"
 
+// Disable XML doc errors for the turbojpeg header
+#pragma warning(push)
+#pragma warning(disable: 4635)
+#include "turbojpeg.h"
+#pragma warning(pop)
+
 namespace EosClr
 {
 	/// <summary>
@@ -239,6 +245,8 @@ namespace EosClr
 		/// The camera that's currently connected and open to the SDK
 		/// </summary>
 		static Camera^ CurrentCamera;
+
+		tjhandle JpegDecompressor;
 
 		Task^ LiveViewReadTask;
 

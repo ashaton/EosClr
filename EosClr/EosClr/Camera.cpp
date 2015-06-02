@@ -190,10 +190,12 @@ namespace EosClr
 			throw gcnew CameraNotConnectedException();
 		}
 
+		JpegDecompressor = tjInitDecompress();
+
 		// This is pretty much taken straight from the reference docs.
 		EdsUInt32 propValue;
 		ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
-		propValue |= kEdsEvfOutputDevice_PC;
+		propValue = kEdsEvfOutputDevice_PC;
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
 		
 		pin_ptr<EdsStreamRef> pinnedLiveViewStream = &LiveViewStream;
@@ -232,6 +234,8 @@ namespace EosClr
 		}
 		LiveViewReadTask->Wait();
 
+		tjDestroy(JpegDecompressor);
+
 		ErrorCheck(EdsRelease(LiveViewImage));
 		ErrorCheck(EdsRelease(LiveViewStream));
 		LiveViewImage = NULL;
@@ -239,7 +243,7 @@ namespace EosClr
 
 		EdsUInt32 propValue;
 		ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
-		propValue &= ~kEdsEvfOutputDevice_PC;
+		propValue = kEdsEvfOutputDevice_TFT;
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
 	}
 
@@ -270,29 +274,45 @@ namespace EosClr
 				Thread::Sleep(500);
 				continue;
 			}
+			else if (result == EDS_ERR_CANNOT_MAKE_OBJECT)
+			{
+				PropertyChanged("Can't make object :/");
+				Thread::Sleep(1000);
+				continue;
+			}
 			ErrorCheck(result);
 
-			//EdsUInt32 streamLength;
 			EdsUInt32 streamPos;
 			EdsVoid* streamPtr;
-			//EdsImageRef imageRef;
-			//EdsImageInfo imageInfo;
+			EdsImageRef imageRef;
+			EdsImageInfo imageInfo;
 			ErrorCheck(EdsGetPosition(LiveViewStream, &streamPos));
 			ErrorCheck(EdsGetPointer(LiveViewStream, &streamPtr));
+			ErrorCheck(EdsCreateImageRef(LiveViewStream, &imageRef));
+			ErrorCheck(EdsGetImageInfo(imageRef, kEdsImageSrc_FullView, &imageInfo));
+			
+			int bytesPerPixel = imageInfo.componentDepth / 8;
+			int numberOfChannels = imageInfo.numOfComponents;
+			int width = imageInfo.width;
+			int height = imageInfo.height;
+			int totalSize = width * height * numberOfChannels * bytesPerPixel;
+
+			unsigned char* jpegBuffer = reinterpret_cast<unsigned char*>(streamPtr);
+
+
+
+			//tjDecompress2(JpegDecompressor, jpegBuffer, totalSize, NULL, width, 0, height, TJPF_RGB, TJFLAG_FASTDCT);
 
 			array<unsigned char>^ imgBytes = gcnew array<unsigned char>(streamPos);
 			Marshal::Copy((IntPtr)streamPtr, imgBytes, 0, imgBytes->Length);
 			System::IO::File::WriteAllBytes("C:\\kappa\\img" + (imgCounter++) + ".jpg", imgBytes);
 
-			/*ErrorCheck(EdsGetLength(LiveViewStream, &streamLength));
-			ErrorCheck(EdsCreateImageRef(LiveViewStream, &imageRef));
-			ErrorCheck(EdsGetImageInfo(imageRef, kEdsImageSrc_FullView, &imageInfo));
+			//ErrorCheck(EdsGetLength(LiveViewStream, &streamLength));
 			PropertyChanged("New image!" + Environment::NewLine + 
-				"\tLength = " + streamLength + Environment::NewLine + 
 				"\tPos = " + streamPos + Environment::NewLine + 
 				"\tPtr = " + ((unsigned int)streamPtr).ToString("X") + Environment::NewLine + 
 				"\tHeight = " + imageInfo.height + Environment::NewLine +
-				"\tWidth = " + imageInfo.width);*/
+				"\tWidth = " + imageInfo.width);
 			Thread::Sleep(1000);
 		}
 	}

@@ -60,6 +60,9 @@
     <ClInclude Include="ExposureTimeManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lib\turbojpeg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -102,5 +105,8 @@
     <Image Include="app.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\turbojpeg.lib" />
   </ItemGroup>
 </Project>
