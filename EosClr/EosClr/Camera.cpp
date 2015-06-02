@@ -12,6 +12,7 @@ namespace EosClr
 		this->CameraHandle = CameraHandle;
 		_SupportedIsoSpeeds = gcnew List<IsoSpeed>();
 		_SupportedExposureTimes = gcnew List<ExposureTime>();
+		LiveViewClosingLock = gcnew Object();
 		
 		// Initialize the camera and its details
 		EdsDeviceInfo deviceInfo;
@@ -199,9 +200,12 @@ namespace EosClr
 		pin_ptr<EdsEvfImageRef> pinnedLiveViewImage = &LiveViewImage;
 		ErrorCheck(EdsCreateMemoryStream(0, pinnedLiveViewStream));
 		ErrorCheck(EdsCreateEvfImageRef(LiveViewStream, pinnedLiveViewImage));
-
-		// TODO: DOWNLOAD IMAGES ON A SEPARATE THREAD
-		//ErrorCheck(EdsDownloadEvfImage(CameraHandle, ))
+		LiveViewClosing = false;
+		EdsSize size;
+		ErrorCheck(EdsDownloadEvfImage(CameraHandle, LiveViewImage));
+		ErrorCheck(EdsGetPropertyData(LiveViewImage, kEdsPropID_Evf_CoordinateSystem, 0, sizeof(size), &size));
+		PropertyChanged("EVF Size! Height = " + size.height + ", width = " + size.width);
+		LiveViewReadTask = Task::Factory->StartNew(gcnew Action(this, &Camera::LiveViewReadLoop));
 	}
 
 	void Camera::DeactivateLiveView()
@@ -216,6 +220,18 @@ namespace EosClr
 		{
 			return;
 		}
+
+		try
+		{
+			Monitor::Enter(LiveViewClosingLock);
+			LiveViewClosing = true;
+		}
+		finally
+		{
+			Monitor::Exit(LiveViewClosingLock);
+		}
+		LiveViewReadTask->Wait();
+
 		ErrorCheck(EdsRelease(LiveViewImage));
 		ErrorCheck(EdsRelease(LiveViewStream));
 		LiveViewImage = NULL;
@@ -227,66 +243,58 @@ namespace EosClr
 		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Evf_OutputDevice, 0, sizeof(propValue), &propValue));
 	}
 
-	int Camera::ZoomLevel::get()
+	int imgCounter = 0;
+
+	void Camera::LiveViewReadLoop()
 	{
-		if (CurrentCamera != this)
+		while (true)
 		{
-			throw gcnew CameraNotConnectedException();
+			// Check to see if LiveView is closing, and return if it is.
+			try
+			{
+				Monitor::Enter(LiveViewClosingLock);
+				if (LiveViewClosing)
+				{
+					return;
+				}
+			}
+			finally
+			{
+				Monitor::Exit(LiveViewClosingLock);
+			}
+
+			// Download the image from the camera
+			EdsError result = EdsDownloadEvfImage(CameraHandle, LiveViewImage);
+			if (result == EDS_ERR_OBJECT_NOTREADY)
+			{
+				Thread::Sleep(500);
+				continue;
+			}
+			ErrorCheck(result);
+
+			//EdsUInt32 streamLength;
+			EdsUInt32 streamPos;
+			EdsVoid* streamPtr;
+			//EdsImageRef imageRef;
+			//EdsImageInfo imageInfo;
+			ErrorCheck(EdsGetPosition(LiveViewStream, &streamPos));
+			ErrorCheck(EdsGetPointer(LiveViewStream, &streamPtr));
+
+			array<unsigned char>^ imgBytes = gcnew array<unsigned char>(streamPos);
+			Marshal::Copy((IntPtr)streamPtr, imgBytes, 0, imgBytes->Length);
+			System::IO::File::WriteAllBytes("C:\\kappa\\img" + (imgCounter++) + ".jpg", imgBytes);
+
+			/*ErrorCheck(EdsGetLength(LiveViewStream, &streamLength));
+			ErrorCheck(EdsCreateImageRef(LiveViewStream, &imageRef));
+			ErrorCheck(EdsGetImageInfo(imageRef, kEdsImageSrc_FullView, &imageInfo));
+			PropertyChanged("New image!" + Environment::NewLine + 
+				"\tLength = " + streamLength + Environment::NewLine + 
+				"\tPos = " + streamPos + Environment::NewLine + 
+				"\tPtr = " + ((unsigned int)streamPtr).ToString("X") + Environment::NewLine + 
+				"\tHeight = " + imageInfo.height + Environment::NewLine +
+				"\tWidth = " + imageInfo.width);*/
+			Thread::Sleep(1000);
 		}
-
-		EdsUInt32 zoomLevel;
-		EdsError result = EdsGetPropertyData(LiveViewImage, kEdsPropID_Evf_Zoom, 0, sizeof(zoomLevel), &zoomLevel);
-		if (result != EDS_ERR_OK)
-		{
-			zoomLevel = result * -1;
-		}
-		return zoomLevel;
-	}
-
-	void Camera::ZoomLevel::set(int NewLevel)
-	{
-		if (CurrentCamera != this)
-		{
-			throw gcnew CameraNotConnectedException();
-		}
-
-		EdsUInt32 zoomLevel = NewLevel;
-		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_Evf_Zoom, 0, sizeof(zoomLevel), &zoomLevel));
-	}
-
-	String^ Camera::CropPosition::get()
-	{
-		if (CurrentCamera != this)
-		{
-			throw gcnew CameraNotConnectedException();
-		}
-
-		EdsPoint point;
-		EdsError result = EdsGetPropertyData(LiveViewImage, kEdsPropID_Evf_ImagePosition, 0, sizeof(point), &point);
-		return point.x + ", " + point.y;
-	}
-
-	int Camera::Mode::get()
-	{
-		if (CurrentCamera != this)
-		{
-			throw gcnew CameraNotConnectedException();
-		}
-
-		EdsUInt32 mode;
-		ErrorCheck(EdsGetPropertyData(CameraHandle, kEdsPropID_AEMode, 0, sizeof(mode), &mode));
-		return mode;
-	}
-
-	void Camera::Mode::set(int Mode)
-	{
-		if (CurrentCamera != this)
-		{
-			throw gcnew CameraNotConnectedException();
-		}
-
-		EdsUInt32 mode = Mode;
-		ErrorCheck(EdsSetPropertyData(CameraHandle, kEdsPropID_AEModeSelect, 0, sizeof(mode), &mode));
 	}
 
 	void Camera::RefreshSupportedIsoSpeeds()
@@ -380,6 +388,17 @@ namespace EosClr
 			RefreshSupportedExposureTimes();
 			SupportedExposureTimesChanged(_SupportedExposureTimes);
 			break;
+		}
+		case kEdsPropID_Evf_AFMode:
+		{
+			EdsPropertyDesc afModes;
+			ErrorCheck(EdsGetPropertyDesc(CameraHandle, kEdsPropID_Evf_AFMode, &afModes));
+			PropertyChanged("AF MODE OPTIONS:");
+			for (int i = 0; i < afModes.numElements; i++)
+			{
+				EdsInt32 mode = afModes.propDesc[i];
+				PropertyChanged("\t" + mode.ToString("X"));
+			}
 		}
 		default: // Anything that we haven't handled yet gets printed to the debug event
 			PropertyChanged("PropertyOptionsChanged, Prop = " + PropertyID.ToString("X") + ", Param = " + Param.ToString("X"));

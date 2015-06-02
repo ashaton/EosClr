@@ -73,8 +73,11 @@ namespace TestUI
 
         void OnCameraPropertyChanged(string Message)
         {
-            LogBox.Text += Message + Environment.NewLine;
-            LogScroller.ScrollToEnd();
+            Dispatcher.BeginInvoke((Action)(() =>
+            {
+                LogBox.Text += Message + Environment.NewLine;
+                LogScroller.ScrollToEnd();
+            }));
         }
 
         private void StartLiveViewButton_Click(object sender, RoutedEventArgs e)

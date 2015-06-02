@@ -66,32 +66,6 @@ namespace EosClr
 		}
 
 		/// <summary>
-		/// NYI
-		/// </summary>
-		property int ZoomLevel
-		{
-			int get();
-			void set(int);
-		};
-
-		/// <summary>
-		/// NYI
-		/// </summary>
-		property String^ CropPosition
-		{
-			String^ get();
-		}
-
-		/// <summary>
-		/// NYI
-		/// </summary>
-		property int Mode
-		{
-			int get();
-			void set(int);
-		}
-
-		/// <summary>
 		/// The current ISO setting
 		/// </summary>
 		property IsoSpeed Iso
@@ -265,6 +239,14 @@ namespace EosClr
 		/// The camera that's currently connected and open to the SDK
 		/// </summary>
 		static Camera^ CurrentCamera;
+
+		Task^ LiveViewReadTask;
+
+		bool LiveViewClosing;
+
+		Object^ LiveViewClosingLock;
+
+		void LiveViewReadLoop();
 
 		/// <summary>
 		/// Refreshes the list of ISO speeds that the camera currently supports.
