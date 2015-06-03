@@ -40,6 +40,8 @@ namespace TestUI
             ActiveCamera.PicturesRemainingChanged += ActiveCamera_PicturesRemainingChanged;
             ActiveCamera.SupportedIsoSpeedsChanged += ActiveCamera_SupportedIsoSpeedsChanged;
             ActiveCamera.SupportedExposureTimesChanged += ActiveCamera_SupportedExposureTimesChanged;
+            ActiveCamera.SetLiveViewCreationCallback(LiveViewImage.InitializeRenderBitmap);
+            ActiveCamera.LiveViewImageUpdated += LiveViewImage.UpdateImage;
 
             ActiveCamera.Connect();
         }

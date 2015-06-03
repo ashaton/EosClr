@@ -32,5 +32,8 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
+        <Border BorderBrush="Black" BorderThickness="2"  Margin="110,160,274,102">
+            <assm:InteropImage x:Name="LiveViewImage" Width="400" Height="300" />
+        </Border>
     </Grid>
 </Window>

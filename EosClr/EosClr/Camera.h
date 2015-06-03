@@ -33,6 +33,8 @@ namespace EosClr
 		CanonPtpIp = 2
 	};
 
+	public delegate IntPtr CreateLiveViewBufferCallback(int Width, int Height, int NumberOfChannels, int BitsPerChannel);
+
 	/// <summary>
 	/// The Camera class implements all of the properties and methods used to read from and write to
 	/// a Canon camera. Use this to interact with a physical camera that is connected to the host machine.
@@ -151,6 +153,8 @@ namespace EosClr
 		/// Debug event for notifications that haven't been implemented yet.
 		/// </summary>
 		event Action<String^>^ PropertyChanged;
+
+		event Action^ LiveViewImageUpdated;
 #pragma endregion
 
 #pragma region Methods
@@ -176,6 +180,8 @@ namespace EosClr
 		/// Stops the LiveView stream.
 		/// </summary>
 		void DeactivateLiveView();
+
+		void SetLiveViewCreationCallback(CreateLiveViewBufferCallback^ Callback);
 #pragma endregion
 
 	internal:
@@ -325,6 +331,12 @@ namespace EosClr
 		/// this is kind of a nebulous thing that depends on the property. I'm not really
 		/// sure what it does yet.</param>
 		void OnPropertyOptionsChanged(EdsPropertyID PropertyID, EdsUInt32 Param);
+
+		CreateLiveViewBufferCallback^ CreateLiveViewBuffer;
+
+		EdsImageInfo* PreviousLiveViewInfo;
+
+		BYTE* LiveViewBuffer;
 	};
 
 }

@@ -82,7 +82,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="EnumDescriptionConverter.cs" />
-    <Compile Include="InteropImageSource.cs" />
+    <Compile Include="InteropImage.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

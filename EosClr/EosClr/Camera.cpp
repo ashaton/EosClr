@@ -183,6 +183,11 @@ namespace EosClr
 		}
 	}
 
+	void Camera::SetLiveViewCreationCallback(CreateLiveViewBufferCallback^ Callback)
+	{
+		CreateLiveViewBuffer = Callback;
+	}
+
 	void Camera::ActivateLiveView()
 	{
 		if (CurrentCamera != this)
@@ -203,10 +208,6 @@ namespace EosClr
 		ErrorCheck(EdsCreateMemoryStream(0, pinnedLiveViewStream));
 		ErrorCheck(EdsCreateEvfImageRef(LiveViewStream, pinnedLiveViewImage));
 		LiveViewClosing = false;
-		EdsSize size;
-		ErrorCheck(EdsDownloadEvfImage(CameraHandle, LiveViewImage));
-		ErrorCheck(EdsGetPropertyData(LiveViewImage, kEdsPropID_Evf_CoordinateSystem, 0, sizeof(size), &size));
-		PropertyChanged("EVF Size! Height = " + size.height + ", width = " + size.width);
 		LiveViewReadTask = Task::Factory->StartNew(gcnew Action(this, &Camera::LiveViewReadLoop));
 	}
 
@@ -282,6 +283,7 @@ namespace EosClr
 			}
 			ErrorCheck(result);
 
+			// Get the image details
 			EdsUInt32 streamPos;
 			EdsVoid* streamPtr;
 			EdsImageRef imageRef;
@@ -290,20 +292,50 @@ namespace EosClr
 			ErrorCheck(EdsGetPointer(LiveViewStream, &streamPtr));
 			ErrorCheck(EdsCreateImageRef(LiveViewStream, &imageRef));
 			ErrorCheck(EdsGetImageInfo(imageRef, kEdsImageSrc_FullView, &imageInfo));
-			
+
 			int bytesPerPixel = imageInfo.componentDepth / 8;
 			int numberOfChannels = imageInfo.numOfComponents;
 			int width = imageInfo.width;
 			int height = imageInfo.height;
+			
+			// Compare to the previous info - if this image isn't the same format, call the buffer creation callback.
+			if (PreviousLiveViewInfo == NULL ||
+				PreviousLiveViewInfo->height != height ||
+				PreviousLiveViewInfo->width != width ||
+				PreviousLiveViewInfo->componentDepth != imageInfo.componentDepth ||
+				PreviousLiveViewInfo->numOfComponents != numberOfChannels)
+			{
+				IntPtr newBuffer = CreateLiveViewBuffer(width, height, numberOfChannels, imageInfo.componentDepth);
+				LiveViewBuffer = static_cast<BYTE*>(newBuffer.ToPointer());
+				PreviousLiveViewInfo = &imageInfo;
+			}
+
+			// Decode the image since it's a JPEG
 			int totalSize = width * height * numberOfChannels * bytesPerPixel;
+			BYTE* jpegBuffer = static_cast<BYTE*>(streamPtr);
+			TJPF pixelFormat;
+			switch (numberOfChannels)
+			{
+			case 1:
+				pixelFormat = TJPF_GRAY;
+				break;
+			case 3:
+				pixelFormat = TJPF_RGB;
+				break;
+			default:
+				throw gcnew Exception("Number of channels = " + numberOfChannels + " which isn't supported.");
+			}
+			int decodeResult = tjDecompress2(JpegDecompressor, jpegBuffer, totalSize, LiveViewBuffer, width, 0, height, pixelFormat, TJFLAG_FASTDCT);
+			if (decodeResult == -1)
+			{
+				char* errorMessage = tjGetErrorStr();
+				String^ messageString = Marshal::PtrToStringAnsi((IntPtr)errorMessage);
+				throw gcnew Exception("JPEG decode failed: " + messageString);
+			}
 
-			unsigned char* jpegBuffer = reinterpret_cast<unsigned char*>(streamPtr);
+			LiveViewImageUpdated();
 
-
-
-			//tjDecompress2(JpegDecompressor, jpegBuffer, totalSize, NULL, width, 0, height, TJPF_RGB, TJFLAG_FASTDCT);
-
-			array<unsigned char>^ imgBytes = gcnew array<unsigned char>(streamPos);
+			/*array<unsigned char>^ imgBytes = gcnew array<unsigned char>(streamPos);
 			Marshal::Copy((IntPtr)streamPtr, imgBytes, 0, imgBytes->Length);
 			System::IO::File::WriteAllBytes("C:\\kappa\\img" + (imgCounter++) + ".jpg", imgBytes);
 
@@ -313,7 +345,7 @@ namespace EosClr
 				"\tPtr = " + ((unsigned int)streamPtr).ToString("X") + Environment::NewLine + 
 				"\tHeight = " + imageInfo.height + Environment::NewLine +
 				"\tWidth = " + imageInfo.width);
-			Thread::Sleep(1000);
+			Thread::Sleep(1000);*/
 		}
 	}
 
